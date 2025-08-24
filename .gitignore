@@ -1,0 +1,56 @@
+# .NET build output
+bin/
+obj/
+
+# Visual Studio user files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code settings
+.vscode/
+
+# NuGet packages
+*.nupkg
+**/packages/*
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Rider and Resharper
+.idea/
+_ReSharper*/
+*.[Rr]e[Ss]harper*
+*.dotCover
+
+# Local history
+.history/
+
+# Windows image caches
+Thumbs.db
+
+# Log and temp files
+*.log
+*.bak
+*.swp
+*.tmp
+
+# Visual Studio folder
+.vs/
+
+# Playwright output
+bin/Debug/net*/.playwright/
+
+# Screenshots
+#[Ss]creenshots/
+**/[Ss]creenshots/
+**/[Ss]creenshots/*
+Projects/*/Screenshots/
+
+# Local config and secrets
+config.local.json
+secrets.json
