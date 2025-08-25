@@ -32,11 +32,13 @@ public partial class Form1 : Form
             return;
         }
         string screenshotsDir = Path.Combine("Projects", projectName, "Screenshots");
+        textBoxProgress.Clear();
         using var playwright = await Microsoft.Playwright.Playwright.CreateAsync();
         var browser = await playwright.Chromium.LaunchAsync(new Microsoft.Playwright.BrowserTypeLaunchOptions { Headless = true });
         var page = await browser.NewPageAsync();
         foreach (var capture in config.Captures)
         {
+            textBoxProgress.AppendText($"Navigating to: {capture.Url}\r\n");
             await page.GotoAsync(capture.Url);
             string fileName = capture.Name;
             foreach (var c in Path.GetInvalidFileNameChars())
@@ -49,11 +51,13 @@ public partial class Form1 : Form
             }
             string screenshotPath = Path.Combine(screenshotsDir, $"{fileName}.png");
             await page.ScreenshotAsync(new Microsoft.Playwright.PageScreenshotOptions { Path = screenshotPath, FullPage = true });
+            textBoxProgress.AppendText($"Screenshot saved to {screenshotPath}\r\n");
         }
         await browser.CloseAsync();
-        // Compile PDF
+        textBoxProgress.AppendText("Compiling PDF...\r\n");
         string pdfPath = Path.Combine(screenshotsDir, "Screenshots.pdf");
         ScreenshotPdfCompiler.CompileScreenshotsToPdf(config.Captures, screenshotsDir, pdfPath);
+        textBoxProgress.AppendText($"PDF compiled and saved to {pdfPath}\r\n");
         MessageBox.Show($"Screenshots and PDF saved to {screenshotsDir}");
     }
     
