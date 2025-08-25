@@ -6,6 +6,6 @@ namespace PrimeGlobalPeople
     {
         public string? Project { get; set; }
         public string? Website { get; set; }
-        public List<string>? MenuUrls { get; set; }
+        public List<Capture>? Captures { get; set; }
     }
 }

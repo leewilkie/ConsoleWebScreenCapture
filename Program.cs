@@ -6,11 +6,14 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Playwright;
 using PrimeGlobalPeople;
+using PdfSharp.Drawing;
 
 class Program
 {
     static async Task Main(string[] args)
     {
+        PdfSharp.Fonts.GlobalFontSettings.UseWindowsFontsUnderWindows = true;
+
         if (args.Length > 0)
         {
             string projectName = args[0];
@@ -35,19 +38,16 @@ class Program
                 Console.WriteLine("Website URL in config is not valid.");
                 return;
             }
-            if (config.MenuUrls != null && config.MenuUrls.Count > 0)
+            string screenshotsDir = Path.Combine("Projects", config.Project, "Screenshots");
+            if (config.Captures != null && config.Captures.Count > 0)
             {
-                foreach (var menuUrl in config.MenuUrls)
-                {
-                    Console.WriteLine($"Taking screenshot of: {menuUrl}");
-                    await TakeScreenshotAsync(menuUrl);
-                }
+                await TakeScreenshotsAsync(config.Captures, screenshotsDir);
             }
             else
             {
-                Console.WriteLine($"Taking screenshot of: {config.Website}");
-                await TakeScreenshotAsync(config.Website);
+                await TakeScreenshotsAsync(new System.Collections.Generic.List<Capture> { new Capture { Name = config.Project, Url = config.Website } }, screenshotsDir);
             }
+            // PDF creation is now handled in TakeScreenshotsAsync
         }
         else
         {
@@ -69,29 +69,50 @@ class Program
         return JsonSerializer.Deserialize<ProjectConfig>(configJson, options);
     }
 
-    static async Task TakeScreenshotAsync(string url)
+    static async Task TakeScreenshotsAsync(System.Collections.Generic.List<Capture> captures, string screenshotsDir)
     {
-        Console.WriteLine($"Navigating to: {url}");
         using var playwright = await Playwright.CreateAsync();
         var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true });
         var page = await browser.NewPageAsync();
-        await page.GotoAsync(url);
-        string fileName = url;
-        foreach (var c in Path.GetInvalidFileNameChars())
+        var pdfDocument = new PdfSharp.Pdf.PdfDocument();
+        foreach (var capture in captures)
         {
-            fileName = fileName.Replace(c, '_');
-        }
-        // Store screenshots in Screenshots folder within the project folder
-        string projectScreenshotsDir = Path.Combine("Projects", GetProjectFolderNameFromUrl(url), "Screenshots");
-        if (!Directory.Exists(projectScreenshotsDir))
-        {
-            Directory.CreateDirectory(projectScreenshotsDir);
-        }
-        string screenshotPath = Path.Combine(projectScreenshotsDir, $"{fileName}.png");
-    await page.ScreenshotAsync(new PageScreenshotOptions { Path = screenshotPath, FullPage = true });
-        Console.WriteLine($"Screenshot saved to {screenshotPath}");
-        await browser.CloseAsync();
+            Console.WriteLine($"Navigating to: {capture.Url}");
+            await page.GotoAsync(capture.Url);
+            string fileName = capture.Name;
+            foreach (var c in Path.GetInvalidFileNameChars())
+            {
+                fileName = fileName.Replace(c, '_');
+            }
+            if (!Directory.Exists(screenshotsDir))
+            {
+                Directory.CreateDirectory(screenshotsDir);
+            }
+            string screenshotPath = Path.Combine(screenshotsDir, $"{fileName}.png");
+            await page.ScreenshotAsync(new PageScreenshotOptions { Path = screenshotPath, FullPage = true });
+            Console.WriteLine($"Screenshot saved to {screenshotPath}");
 
+            // Add to PDF
+            using (var image = PdfSharp.Drawing.XImage.FromFile(screenshotPath))
+            {
+                var pagePdf = pdfDocument.AddPage();
+                double headerHeight = 40;
+                pagePdf.Width = image.PixelWidth * 72 / image.HorizontalResolution;
+                pagePdf.Height = (image.PixelHeight * 72 / image.VerticalResolution) + headerHeight;
+                using (var gfx = PdfSharp.Drawing.XGraphics.FromPdfPage(pagePdf))
+                {
+                    var font = new XFont("Arial", 14,  XFontStyleEx.Bold);
+                    gfx.DrawString($"{capture.Name}", font, XBrushes.Black, new XRect(0, 0, pagePdf.Width, 20), XStringFormats.TopLeft);
+                    var fontSmall = new XFont("Arial", 10, XFontStyleEx.Regular);
+                    gfx.DrawString($"{capture.Url}", fontSmall, XBrushes.Black, new XRect(0, 20, pagePdf.Width, 20), XStringFormats.TopLeft);
+                    gfx.DrawImage(image, 0, headerHeight, pagePdf.Width, pagePdf.Height - headerHeight);
+                }
+            }
+        }
+        await browser.CloseAsync();
+        string pdfPath = Path.Combine(screenshotsDir, "Screenshots.pdf");
+        pdfDocument.Save(pdfPath);
+        Console.WriteLine($"PDF compiled and saved to {pdfPath}");
     }
 
     static string GetProjectFolderNameFromUrl(string url)

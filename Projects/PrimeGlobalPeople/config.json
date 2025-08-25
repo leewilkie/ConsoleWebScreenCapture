@@ -1,11 +1,26 @@
 {
-  "project": "Prime Global People",
+  "project": "PrimeGlobalPeople",
   "website": "https://primeglobalpeople.com/",
-  "menuUrls": [
-    "https://primeglobalpeople.com/",
-    "https://primeglobalpeople.com/our-services",
-    "https://primeglobalpeople.com/prime-solutions-lab",
-    "https://primeglobalpeople.com/insights-center/",
-    "https://primeglobalpeople.com/contact-us"
+  "captures": [
+    {
+      "name": "Homepage",
+      "url": "https://primeglobalpeople.com/"
+    },
+    {
+      "name": "Our Services",
+      "url": "https://primeglobalpeople.com/our-services"
+    },
+    {
+      "name": "Prime Solutions Lab",
+      "url": "https://primeglobalpeople.com/prime-solutions-lab"
+    },
+    {
+      "name": "Insights Center",
+      "url": "https://primeglobalpeople.com/insights-center/"
+    },
+    {
+      "name": "Contact Us",
+      "url": "https://primeglobalpeople.com/contact-us"
+    }
   ]
 }
