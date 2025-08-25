@@ -114,24 +114,4 @@ class Program
         pdfDocument.Save(pdfPath);
         Console.WriteLine($"PDF compiled and saved to {pdfPath}");
     }
-
-    static string GetProjectFolderNameFromUrl(string url)
-    {
-        // Example: https://primeglobalpeople.com/ -> PrimeGlobalPeople
-        try
-        {
-            var uri = new Uri(url);
-            string host = uri.Host.Replace("www.", "");
-            string[] parts = host.Split('.');
-            // Take the first part and PascalCase it
-            if (parts.Length > 0)
-            {
-                string name = string.Join("", parts).Replace("com", "");
-                // Capitalize each word
-                return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name).Replace(" ", "");
-            }
-        }
-        catch { }
-        return "UnknownProject";
-    }
 }

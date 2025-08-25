@@ -4,7 +4,7 @@ using PdfSharp.Pdf;
 using PdfSharp.Drawing;
 using System.Linq;
 using System.Collections.Generic;
-using PrimeGlobalPeople;
+using DemoAppWinForms;
 
 public static class ScreenshotPdfCompiler
 {
